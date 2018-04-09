@@ -18,7 +18,7 @@ function router(obj) {
 }
 
 router.prototype.init = function () {
-
+  // vue 初始化时
 }
 
 
@@ -43,8 +43,14 @@ router.install = function (Vue, options) {
     console.log('has hash')
   }
 
-  Vue.component('router-view',curView)
+  Vue.mixin({
+    beforeCreate:function(){
+        //检测是否有 router 参数，从而进行初始化的机会
+    }
+  })
 
+  Vue.component('router-view',curView)
+  // 组件渲染  h(component, data, children)
 }
 
 
