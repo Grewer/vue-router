@@ -1,11 +1,9 @@
 import Vue from 'vue'
 
-
-var curView = {
-  template:"<div></div>"
-}
-
 var routersObj = {}
+var curView = null
+
+
 function router(obj) {
   // constructor
   console.log(obj)
@@ -17,8 +15,22 @@ function router(obj) {
   }
 }
 
-router.prototype.init = function () {
+function render(){
+  console.log('运行检测','render run')
+  var hashPosition = location.href.indexOf('#')
+
+  if (hashPosition === -1) {
+    location.href = location.href + '#/';
+    curView = routersObj['/']
+  } else {
+    var hash = location.hash.substr(1)
+    curView = routersObj[hash]
+  }
+}
+
+router.prototype.init = function (app) {
   // vue 初始化时
+  render();
 }
 
 
@@ -26,31 +38,31 @@ router.prototype.init = function () {
 window.onhashchange = function (urlData) {
   console.log(urlData)
 }
+// var hash = location.hash.substr(1)
+// curView = routersObj[hash]
 
 
 router.install = function (Vue, options) {
-  Vue.prototype.$route = {test: '1'}
-
-  var hashPosition = location.href.indexOf('#')
-  if(hashPosition === -1){
-    location.href = location.href+'#/';
-    curView = routersObj['/']
-    console.log(curView)
-    console.log('addhash')
-  }else{
-    var hash = location.hash.substr(1)
-    curView = routersObj[hash]
-    console.log('has hash')
-  }
+  // 插件绑定 还未 new
 
   Vue.mixin({
-    beforeCreate:function(){
-        //检测是否有 router 参数，从而进行初始化的机会
+    beforeCreate: function () {
+      //检测是否有 router 参数，从而进行初始化的机会
+      if (this.$options.router) {
+        this._router = this.$options.router// new App 接受的router
+        this._router.init(this)
+      }
+      // this.$route = {}// 当前页面信息
+      // this.$router = {}//页面操作
     }
   })
-
-  Vue.component('router-view',curView)
-  // 组件渲染  h(component, data, children)
+  Vue.component('router-view', {
+    render: function (h) {
+      return h(
+        curView
+      )
+    }
+  })
 }
 
 

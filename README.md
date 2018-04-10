@@ -14,6 +14,7 @@ main api:
 
 - hashchange
 - location
+- history
 
 
 ### 官方实例 vueRouter 的 API
@@ -35,7 +36,7 @@ vueRouter.prototype 函数:
 - afterEach 每一次跳转路由后调用的函数
 - back 返回上一个路由
 - beforeEach 每一次路由跳转前调用
-- forward 动态的导航到一个新 URL
+- forward 前进一个路由
 - getMatchedComponents  返回目标位置或是当前路由匹配的组件数组 服务端预加载使用
 - go 跳转路由
 - init 初始化函数 
