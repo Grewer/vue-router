@@ -10,8 +10,8 @@ export default {
   name: 'App',
   mounted(){
     console.log(this)
-    console.log('router:',this.$router)
-    console.log('route:',this.$route)
+    console.log('app router:',this.$router)
+    console.log('app route:',this.$route)
   }
 }
 </script>

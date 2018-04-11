@@ -20,19 +20,49 @@ function render(){
   var hashPosition = location.href.indexOf('#')
 
   if (hashPosition === -1) {
-    location.href = location.href + '#/';
+    history.pushState('','','#/')
     curView = routersObj['/']
   } else {
     var hash = location.hash.substr(1)
     curView = routersObj[hash]
   }
+  // 后续对动态路径匹配
 }
 
 router.prototype.init = function (app) {
   // vue 初始化时
   render();
+
+  this.app = app
+  //初始化 history api
+   console.dir(history)
+    this.init$router()
 }
 
+router.prototype.init$router = function () {
+  //每个页面都相同
+  this.app.$router = {
+    push:function () {
+
+    },
+    replace:function () {
+
+    },
+    back:function () {
+
+    },
+    go:function () {
+
+    },
+    forward:function () {
+
+    }
+  }
+}
+
+router.prototype.init$route = function () {
+  //
+}
 
 
 window.onhashchange = function (urlData) {
