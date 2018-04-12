@@ -47,3 +47,10 @@ vueRouter.prototype 函数:
 - replace 替换当前路由
 - resolve 解析目标位置
 - currentRoute 当前路由对象
+
+
+### 参考文档
+
+- [https://segmentfault.com/p/1210000009973331/read](https://segmentfault.com/p/1210000009973331/read)
+- [https://router.vuejs.org/zh-cn/](https://router.vuejs.org/zh-cn/)  
+

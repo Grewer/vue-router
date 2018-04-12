@@ -7,6 +7,8 @@ var curView = null
 function router(obj) {
   // constructor
   console.log(obj)
+  this.apps = [];
+
   var routers = obj.routes || [];
   for (var i = 0, l = routers.length; i < l; i++) {
     var cur = routers[i];
@@ -18,9 +20,8 @@ function router(obj) {
 function render(){
   console.log('运行检测','render run')
   var hashPosition = location.href.indexOf('#')
-
   if (hashPosition === -1) {
-    history.pushState('','','#/')
+    pushHash('/')
     curView = routersObj['/']
   } else {
     var hash = location.hash.substr(1)
@@ -31,19 +32,33 @@ function render(){
 
 router.prototype.init = function (app) {
   // vue 初始化时
-  render();
+  render(); // 后续修改
+
+
+  this.apps.push(app);
+  // main app already initialized.
+  if (this.app) {
+    return
+  }
 
   this.app = app
   //初始化 history api
    console.dir(history)
-    this.init$router()
+  this.init$router(app)
+  this.init$route(app)
 }
 
-router.prototype.init$router = function () {
+router.prototype.init$router = function (app) {
   //每个页面都相同
-  this.app.$router = {
-    push:function () {
-
+  var $this = this;
+  app.$router = {
+    push:function (location, onComplete, onAbort) {
+        // location 接收一个字符串或对象
+      $this.transitionTo(location,function (route) {
+        pushHash(route.fullPath)
+        handleScroll(this$1.router, route, fromRoute, false);
+        onComplete && onComplete(route);
+      }, onAbort)
     },
     replace:function () {
 
@@ -60,10 +75,28 @@ router.prototype.init$router = function () {
   }
 }
 
-router.prototype.init$route = function () {
+router.prototype.init$route = function (app) {
   //
+  return {
+    fullPath:location.href,
+  }
+
 }
 
+router.prototype.transitionTo = function (location,onComplete,onAbort) { // vue router 中的函数
+
+
+}
+
+
+function onComplete(route){
+
+}
+
+function pushHash(hash,params) {
+  history.pushState(params||'','','#'+hash)
+  // window.location.hash = hash
+}
 
 window.onhashchange = function (urlData) {
   console.log(urlData)
@@ -78,9 +111,15 @@ router.install = function (Vue, options) {
   Vue.mixin({
     beforeCreate: function () {
       //检测是否有 router 参数，从而进行初始化的机会
+
+
       if (this.$options.router) {
         this._router = this.$options.router// new App 接受的router
         this._router.init(this)
+      }else{
+        this._router = this.$parent._router;
+        this.$router = this.$parent.$router
+        this.$route = this._router.init$route(this)
       }
       // this.$route = {}// 当前页面信息
       // this.$router = {}//页面操作

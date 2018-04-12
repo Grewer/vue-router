@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
     <router-view/>
+    <button @click="$router.push('/test1')">按钮router.push</button>
   </div>
 </template>
 
@@ -25,4 +25,20 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+
+  button{
+    margin: 10px;
+    padding: 5px 10px;
+    color: #333;
+    cursor: pointer;
+    outline: 0;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    background-color: #fff;
+    appearance: none;
+  }
+
+  button:hover{
+    border-color: #555;
+  }
 </style>
