@@ -84,14 +84,34 @@ router.prototype.init$route = function (app) {
 }
 
 router.prototype.transitionTo = function (location,onComplete,onAbort) { // vue router 中的函数
+  var this$1 = this;
 
+  // var route = this.router.match(location, this.current); //匹配路径
+
+
+  this.confirmTransition(route, function () {
+    this$1.updateRoute(route);
+    onComplete && onComplete(route);
+    this$1.ensureURL();
+
+    // fire ready cbs once
+    if (!this$1.ready) {
+      this$1.ready = true;
+      this$1.readyCbs.forEach(function (cb) { cb(route); });
+    }
+  }, function (err) {
+    if (onAbort) {
+      onAbort(err);
+    }
+    if (err && !this$1.ready) {
+      this$1.ready = true;
+      this$1.readyErrorCbs.forEach(function (cb) { cb(err); });
+    }
+  });
 
 }
 
 
-function onComplete(route){
-
-}
 
 function pushHash(hash,params) {
   history.pushState(params||'','','#'+hash)

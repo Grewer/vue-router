@@ -10,7 +10,7 @@ In development
 1. router and route object
 
 
-main api:
+### main api:
 
 - hashchange
 - location
@@ -49,8 +49,19 @@ vueRouter.prototype 函数:
 - currentRoute 当前路由对象
 
 
+### 需要理解的几个问题
+
+1. 路由加载的主要流程
+2. 路由 init 和 history router 函数是否值执行一次,子组件都是复制父组件的值?
+3. 路由的匹配 使用正则匹配
+4. 嵌套渲染时,不同的 router-view 如何渲染不同的值(或者说是渲染的一个 router-view 组件里仍有 router-view 该如何渲染)
+
+
 ### 参考文档
 
 - [https://segmentfault.com/p/1210000009973331/read](https://segmentfault.com/p/1210000009973331/read)
 - [https://router.vuejs.org/zh-cn/](https://router.vuejs.org/zh-cn/)  
+- [vue-router.js 源码](https://github.com/vuejs/vue-router/blob/dev/dist/vue-router.js)
+- [http://www.php.cn/js-tutorial-386472.html](http://www.php.cn/js-tutorial-386472.html)
+- [http://cnodejs.org/topic/58d680c903d476b42d34c72b](http://cnodejs.org/topic/58d680c903d476b42d34c72b)
 
