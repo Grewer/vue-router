@@ -8,13 +8,30 @@ function router(obj) {
   // constructor
   console.log(obj)
   this.apps = [];
+  var resolveArr = [],
+    pendingArr = []
+  // 假设 钩子
 
   var routers = obj.routes || [];
-  for (var i = 0, l = routers.length; i < l; i++) {
-    var cur = routers[i];
-    routersObj[cur.path] = cur.component
-    routersObj[cur.name] = cur.component
-  }
+  // for (var i = 0, l = routers.length; i < l; i++) {
+  //   var cur = routers[i];
+  //   routersObj[cur.path] = cur.component
+  //   routersObj[cur.name] = cur.component
+  // }
+  // 路由匹配机制
+  // 直接匹配?
+  //
+  // 例:
+  // /name/:name/action/:action
+  // /name/grewer/action/add
+  // 匹配思路: 按照 '/' 分成数组,循环匹配,若遇到 带有':'的路由,记录下名称,输出组件
+}
+
+function matcher(location) {
+  let path = location.split('/')
+  if(path.length === 0) return; // 后续加入
+  for()
+
 }
 
 function render(){
@@ -48,15 +65,28 @@ router.prototype.init = function (app) {
   this.init$route(app)
 }
 
+function createRoute(){
+  // var route = {
+  //   name: location.name || (record && record.name),
+  //   meta: (record && record.meta) || {},
+  //   path: location.path || '/',
+  //   hash: location.hash || '',
+  //   query: query,
+  //   params: location.params || {},
+  //   fullPath: getFullPath(location, stringifyQuery$$1),
+  //   matched: record ? formatMatch(record) : []
+  // };
+}
+
 router.prototype.init$router = function (app) {
   //每个页面都相同
   var $this = this;
   app.$router = {
     push:function (location, onComplete, onAbort) {
+      // TODO push 改变组件方式 先改变路由再显示组件 还是先切换组件再切换路由
         // location 接收一个字符串或对象
       $this.transitionTo(location,function (route) {
         pushHash(route.fullPath)
-        handleScroll(this$1.router, route, fromRoute, false);
         onComplete && onComplete(route);
       }, onAbort)
     },
@@ -70,6 +100,9 @@ router.prototype.init$router = function (app) {
 
     },
     forward:function () {
+
+    },
+    match:function (location,current) {
 
     }
   }
@@ -85,29 +118,35 @@ router.prototype.init$route = function (app) {
 
 router.prototype.transitionTo = function (location,onComplete,onAbort) { // vue router 中的函数
   var this$1 = this;
+  // 步骤
+  // 1.根据 location 匹配路径
+  // 2.有 onComplete 函数则运行
+  // 3.更新 Route
+  // 4.若有 read callBack 则运行
+  // 5.若当前路由和想去的路由相同 则触发  onAbort 函数
 
-  // var route = this.router.match(location, this.current); //匹配路径
+  var route = this.router.match(location, this.current); //匹配路径
 
 
-  this.confirmTransition(route, function () {
-    this$1.updateRoute(route);
-    onComplete && onComplete(route);
-    this$1.ensureURL();
-
-    // fire ready cbs once
-    if (!this$1.ready) {
-      this$1.ready = true;
-      this$1.readyCbs.forEach(function (cb) { cb(route); });
-    }
-  }, function (err) {
-    if (onAbort) {
-      onAbort(err);
-    }
-    if (err && !this$1.ready) {
-      this$1.ready = true;
-      this$1.readyErrorCbs.forEach(function (cb) { cb(err); });
-    }
-  });
+  // this.confirmTransition(route, function () {
+  //   this$1.updateRoute(route);
+  //   onComplete && onComplete(route);
+  //   this$1.ensureURL();
+  //
+  //   // fire ready cbs once
+  //   if (!this$1.ready) {
+  //     this$1.ready = true;
+  //     this$1.readyCbs.forEach(function (cb) { cb(route); });
+  //   }
+  // }, function (err) {
+  //   if (onAbort) {
+  //     onAbort(err);
+  //   }
+  //   if (err && !this$1.ready) {
+  //     this$1.ready = true;
+  //     this$1.readyErrorCbs.forEach(function (cb) { cb(err); });
+  //   }
+  // });
 
 }
 

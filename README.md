@@ -44,6 +44,16 @@ vueRouter.prototype 函数:
 - onError 路由导航过程中出错时被调用
 - onReady 服务端渲染调用
 - push 添加路由
+  ```js
+    this.$router.push(location,function (to) {
+            console.log(to) // to 的 route 对象
+            // 跳转路由后调用
+          },function () {
+            //无回调值
+            // 当前路径和to路径相同时调用该函数
+            console.log('abort')
+          })
+  ```
 - replace 替换当前路由
 - resolve 解析目标位置
 - currentRoute 当前路由对象
