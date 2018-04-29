@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <router-view/>
-    <button @click="$router.push('/test1')">按钮router.push</button>
+    <button @click="$router.push('/testPage/12')">按钮router.push</button>
   </div>
 </template>
 

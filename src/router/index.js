@@ -1,6 +1,7 @@
 import Vue from 'vue'
 
 var routersObj = {}
+var routerWithParam = []
 var curView = null
 
 
@@ -13,11 +14,19 @@ function router(obj) {
   // 假设 钩子
 
   var routers = obj.routes || [];
-  // for (var i = 0, l = routers.length; i < l; i++) {
-  //   var cur = routers[i];
-  //   routersObj[cur.path] = cur.component
-  //   routersObj[cur.name] = cur.component
-  // }
+  for (var i = 0, l = routers.length; i < l; i++) {
+    var cur = routers[i];
+    if(cur.path.indexOf(':') !== -1){
+      routerWithParam.push(path2Regexp(cur.path))
+    }else{
+      routersObj[cur.path] = cur.component
+      routersObj[cur.name] = cur.component
+    }
+  }
+
+  // TODO 待修改 每一个路由添加一个 match 属性
+  // 合并routerWithParam 和 routersObj
+  // console.log(routerWithParam)
   // 路由匹配机制
   // 直接匹配?
   //
@@ -25,12 +34,34 @@ function router(obj) {
   // /name/:name/action/:action
   // /name/grewer/action/add
   // 匹配思路: 按照 '/' 分成数组,循环匹配,若遇到 带有':'的路由,记录下名称,输出组件
+  // 效率太低 no
+}
+
+function path2Regexp(path) {
+    var path = path || ''
+    var arr = path.split('/')
+    var regexp = ''
+    var key = []
+    if(arr.length > 0){
+        for(var i=0,l=arr.length;i<l;i++){
+          if(arr[i].charAt(0) === ':'){
+              regexp += '/\\.'
+              key.push(arr[i].substring(1))
+          }else{
+            regexp += arr[i]
+          }
+        }
+    }
+    return {
+      regexp:regexp,
+      key:key
+    }
 }
 
 function matcher(location) {
   let path = location.split('/')
   if(path.length === 0) return; // 后续加入
-  for()
+
 
 }
 
@@ -60,7 +91,7 @@ router.prototype.init = function (app) {
 
   this.app = app
   //初始化 history api
-   console.dir(history)
+  //  console.dir(history)
   this.init$router(app)
   this.init$route(app)
 }
@@ -76,6 +107,10 @@ function createRoute(){
   //   fullPath: getFullPath(location, stringifyQuery$$1),
   //   matched: record ? formatMatch(record) : []
   // };
+}
+
+router.prototype.match = function(path,cur){
+  console.log(path,cur)
 }
 
 router.prototype.init$router = function (app) {

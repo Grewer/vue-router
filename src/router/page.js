@@ -3,6 +3,8 @@ import Router from './index'
 
 import hello from '@/components/HelloWorld'
 
+import testPage from '@/components/testPage'
+
 Vue.use(Router)
 
 
@@ -12,6 +14,11 @@ export default new Router({
       path: '/',
       name: 'HelloWorld',
       component: hello
+    },
+    {
+      path: '/testPage/:id',
+      name: 'testPage',
+      component: testPage
     }
   ]
 })
