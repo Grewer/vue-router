@@ -16,15 +16,14 @@ function router(obj) {
   var routers = obj.routes || [];
   for (var i = 0, l = routers.length; i < l; i++) {
     var cur = routers[i];
-    if(cur.path.indexOf(':') !== -1){
+    if (cur.path.indexOf(':') !== -1) {
       routerWithParam.push(path2Regexp(cur.path))
-    }else{
+    } else {
       routersObj[cur.path] = cur.component
       routersObj[cur.name] = cur.component
     }
   }
 
-  // TODO 待修改 每一个路由添加一个 match 属性
   // 合并routerWithParam 和 routersObj
   // console.log(routerWithParam)
   // 路由匹配机制
@@ -38,35 +37,35 @@ function router(obj) {
 }
 
 function path2Regexp(path) {
-    var path = path || ''
-    var arr = path.split('/')
-    var regexp = ''
-    var key = []
-    if(arr.length > 0){
-        for(var i=0,l=arr.length;i<l;i++){
-          if(arr[i].charAt(0) === ':'){
-              regexp += '/\\.'
-              key.push(arr[i].substring(1))
-          }else{
-            regexp += arr[i]
-          }
-        }
+  var path = path || ''
+  var arr = path.split('/')
+  var regexp = ''
+  var key = []
+  if (arr.length > 0) {
+    for (var i = 0, l = arr.length; i < l; i++) {
+      if (arr[i].charAt(0) === ':') {
+        regexp += '/\\.'
+        key.push(arr[i].substring(1))
+      } else {
+        regexp += arr[i]
+      }
     }
-    return {
-      regexp:regexp,
-      key:key
-    }
+  }
+  return {
+    regexp: regexp,
+    key: key
+  }
 }
 
 function matcher(location) {
   let path = location.split('/')
-  if(path.length === 0) return; // 后续加入
+  if (path.length === 0) return; // 后续加入
 
 
 }
 
-function render(){
-  console.log('运行检测','render run')
+function render() {
+  console.log('运行检测', 'render run')
   var hashPosition = location.href.indexOf('#')
   if (hashPosition === -1) {
     pushHash('/')
@@ -96,7 +95,7 @@ router.prototype.init = function (app) {
   this.init$route(app)
 }
 
-function createRoute(){
+function createRoute() {
   // var route = {
   //   name: location.name || (record && record.name),
   //   meta: (record && record.meta) || {},
@@ -109,36 +108,42 @@ function createRoute(){
   // };
 }
 
-router.prototype.match = function(path,cur){
-  console.log(path,cur)
+function pathParse(path) {
+
+}
+
+router.prototype.match = function (path, cur) {
+  console.log(path)
+  var path = pathParse(path)
+
 }
 
 router.prototype.init$router = function (app) {
   //每个页面都相同
   var $this = this;
   app.$router = {
-    push:function (location, onComplete, onAbort) {
+    push: function (location, onComplete, onAbort) {
       // TODO push 改变组件方式 先改变路由再显示组件 还是先切换组件再切换路由
-        // location 接收一个字符串或对象
-      $this.transitionTo(location,function (route) {
+      // location 接收一个字符串或对象
+      $this.transitionTo(location, function (route) {
         pushHash(route.fullPath)
         onComplete && onComplete(route);
       }, onAbort)
     },
-    replace:function () {
+    replace: function () {
 
     },
-    back:function () {
+    back: function () {
 
     },
-    go:function () {
+    go: function () {
 
     },
-    forward:function () {
+    forward: function () {
 
     },
-    match:function (location,current) {
-
+    match: function (location, current) {
+      console.log(location, current)
     }
   }
 }
@@ -146,12 +151,29 @@ router.prototype.init$router = function (app) {
 router.prototype.init$route = function (app) {
   //
   return {
-    fullPath:location.href,
+    fullPath: location.href,
   }
 
 }
 
-router.prototype.transitionTo = function (location,onComplete,onAbort) { // vue router 中的函数
+router.prototype.parse = function (location) {
+  console.log(location)
+  // 统一返回一个 path object
+  var component = ''
+  if (location.path) {
+    // path
+    // 路径匹配 获取组件
+  } else if (location.name) {
+    // name
+    component = routersObj[location.name]
+  } else {
+    // 字符串
+    //同1
+  }
+}
+
+
+router.prototype.transitionTo = function (location, onComplete, onAbort) { // vue router 中的函数
   var this$1 = this;
   // 步骤
   // 1.根据 location 匹配路径
@@ -159,9 +181,8 @@ router.prototype.transitionTo = function (location,onComplete,onAbort) { // vue 
   // 3.更新 Route
   // 4.若有 read callBack 则运行
   // 5.若当前路由和想去的路由相同 则触发  onAbort 函数
-
-  var route = this.router.match(location, this.current); //匹配路径
-
+  var route = this.parse(location); //匹配路径
+  // location 可能是一个字符串也可能是一个对象 含有 path name param query 等
 
   // this.confirmTransition(route, function () {
   //   this$1.updateRoute(route);
@@ -187,8 +208,8 @@ router.prototype.transitionTo = function (location,onComplete,onAbort) { // vue 
 
 
 
-function pushHash(hash,params) {
-  history.pushState(params||'','','#'+hash)
+function pushHash(hash, params) {
+  history.pushState(params || '', '', '#' + hash)
   // window.location.hash = hash
 }
 
@@ -210,7 +231,7 @@ router.install = function (Vue, options) {
       if (this.$options.router) {
         this._router = this.$options.router// new App 接受的router
         this._router.init(this)
-      }else{
+      } else {
         this._router = this.$parent._router;
         this.$router = this.$parent.$router
         this.$route = this._router.init$route(this)

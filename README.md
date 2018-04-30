@@ -1,6 +1,6 @@
 # vue-router
 
-> vue-router rewrite
+> a simple hash vue-router 
 
 In development
 
@@ -8,7 +8,7 @@ In development
 
 
 1. router and route object
-
+2. path resolve
 
 ### main api:
 
