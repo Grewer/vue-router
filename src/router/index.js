@@ -109,7 +109,14 @@ function createRoute() {
 }
 
 function pathParse(path) {
+  // 每次匹配时,检测str最后一位是否是/ 若不是则添加 第一位也许测试
+  var str = "/testPage/:id/action/:add/";
+  var patt = new RegExp(/\/:\w*\//, "g");
+  var result
+  // 匹配 :参数
+  if (!(result = path.exec(str))) {
 
+  }
 }
 
 router.prototype.match = function (path, cur) {
@@ -207,7 +214,6 @@ router.prototype.transitionTo = function (location, onComplete, onAbort) { // vu
 }
 
 
-
 function pushHash(hash, params) {
   history.pushState(params || '', '', '#' + hash)
   // window.location.hash = hash
@@ -248,8 +254,6 @@ router.install = function (Vue, options) {
     }
   })
 }
-
-
 
 
 export default router

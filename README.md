@@ -1,10 +1,13 @@
 # vue-router
 
-> a simple hash vue-router 
+> a simple hash vue-router
 
 In development
 
 ### TODOList
+
+路由 path 暂只支持 'foo/:id'
+暂不支持 children // 后续加入
 
 
 1. router and route object
@@ -12,7 +15,6 @@ In development
 
 ### main api:
 
-- hashchange
 - location
 - history
 
@@ -39,8 +41,8 @@ vueRouter.prototype 函数:
 - forward 前进一个路由
 - getMatchedComponents  返回目标位置或是当前路由匹配的组件数组 服务端预加载使用
 - go 跳转路由
-- init 初始化函数 
-- match 
+- init 初始化函数
+- match
 - onError 路由导航过程中出错时被调用
 - onReady 服务端渲染调用
 - push 添加路由
@@ -70,7 +72,7 @@ vueRouter.prototype 函数:
 ### 参考文档
 
 - [https://segmentfault.com/p/1210000009973331/read](https://segmentfault.com/p/1210000009973331/read)
-- [https://router.vuejs.org/zh-cn/](https://router.vuejs.org/zh-cn/)  
+- [https://router.vuejs.org/zh-cn/](https://router.vuejs.org/zh-cn/)
 - [vue-router.js 源码](https://github.com/vuejs/vue-router/blob/dev/dist/vue-router.js)
 - [http://www.php.cn/js-tutorial-386472.html](http://www.php.cn/js-tutorial-386472.html)
 - [http://cnodejs.org/topic/58d680c903d476b42d34c72b](http://cnodejs.org/topic/58d680c903d476b42d34c72b)
