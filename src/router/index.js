@@ -1,10 +1,7 @@
 import Vue from 'vue'
 
-var routersObj = {}
-var routerWithParam = []
+var routes
 var curView = null
-
-var matchArr = []
 
 function router(obj) {
   // constructor
@@ -14,7 +11,7 @@ function router(obj) {
     pendingArr = []
   // 假设 钩子
 
-  var routes = obj.routes || [];
+  routes = obj.routes || [];
   for (var i = 0, l = routes.length; i < l; i++) {
     var cur = routes[i];
     var match = patch(cur.path).replace(/\//g, '\\/')
@@ -62,7 +59,7 @@ function path2Regexp(path) {
     key.push(path.substring(result.index, patt.lastIndex).slice(2, -2))
     var prev = path.substring(0, result.index)
     var next = path.substring(patt.lastIndex)
-    path = prev + '\/:.*?\/' + next
+    path = prev + '\/.*?\/' + next
   }
   return {
     match: path,
@@ -70,22 +67,18 @@ function path2Regexp(path) {
   }
 }
 
-function matcher(location) {
-  let path = location.split('/')
-  if (path.length === 0) return; // 后续加入
+function matcher(path) {
+  for (var i = 0, l = routes.length; i < l; i++) {
+    if (path.match(new RegExp(routes[i].match))) {
+      return routes[i]
+    }
+  }
 }
 
 function render() {
   console.log('运行检测', 'render run')
-  var hashPosition = location.href.indexOf('#')
-  if (hashPosition === -1) {
-    pushHash('/')
-    curView = routersObj['/']
-  } else {
-    var hash = location.hash.substr(1)
-    curView = routersObj[hash]
-  }
-  // 后续对动态路径匹配
+  var hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
+  curView = matcher(patch(hash)).component
 }
 
 router.prototype.init = function (app) {
@@ -177,7 +170,7 @@ router.prototype.parse = function (location) {
     // 路径匹配 获取组件
   } else if (location.name) {
     // name
-    component = routersObj[location.name]
+
   } else {
     // 字符串
     //同1
@@ -227,8 +220,6 @@ function pushHash(hash, params) {
 window.onhashchange = function (urlData) {
   console.log(urlData)
 }
-// var hash = location.hash.substr(1)
-// curView = routersObj[hash]
 
 
 router.install = function (Vue, options) {
