@@ -4,6 +4,7 @@ var routersObj = {}
 var routerWithParam = []
 var curView = null
 
+var matchArr = []
 
 function router(obj) {
   // constructor
@@ -13,16 +14,21 @@ function router(obj) {
     pendingArr = []
   // 假设 钩子
 
-  var routers = obj.routes || [];
-  for (var i = 0, l = routers.length; i < l; i++) {
-    var cur = routers[i];
-    if (cur.path.indexOf(':') !== -1) {
-      routerWithParam.push(path2Regexp(cur.path))
+  var routes = obj.routes || [];
+  for (var i = 0, l = routes.length; i < l; i++) {
+    var cur = routes[i];
+    var match = patch(cur.path).replace(/\//g, '\\/')
+    if (cur.path.indexOf(':') > -1) {
+      // 有属性
+      var m = path2Regexp(match)
+      cur.match = m.match
+      cur.key = m.key
     } else {
-      routersObj[cur.path] = cur.component
-      routersObj[cur.name] = cur.component
+      cur.match = match
     }
   }
+  // 将所有 options 路由,转出一个 match 正则
+
 
   // 合并routerWithParam 和 routersObj
   // console.log(routerWithParam)
@@ -36,23 +42,30 @@ function router(obj) {
   // 效率太低 no
 }
 
+function patch(path) {
+  // 补全斜杠
+  if (path.charAt(0) !== '/') {
+    path = '/' + path
+  }
+  if (path.charAt(path.length - 1) !== '/') {
+    path = path + '/'
+  }
+  return path
+}
+
 function path2Regexp(path) {
-  var path = path || ''
-  var arr = path.split('/')
-  var regexp = ''
+  var patt = new RegExp(/\/:.*?\//, "g");
+  var result
   var key = []
-  if (arr.length > 0) {
-    for (var i = 0, l = arr.length; i < l; i++) {
-      if (arr[i].charAt(0) === ':') {
-        regexp += '/\\.'
-        key.push(arr[i].substring(1))
-      } else {
-        regexp += arr[i]
-      }
-    }
+  // 匹配 :参数
+  while ((result = patt.exec(path))) {
+    key.push(path.substring(result.index, patt.lastIndex).slice(2, -2))
+    var prev = path.substring(0, result.index)
+    var next = path.substring(patt.lastIndex)
+    path = prev + '\/:.*?\/' + next
   }
   return {
-    regexp: regexp,
+    match: path,
     key: key
   }
 }
@@ -60,8 +73,6 @@ function path2Regexp(path) {
 function matcher(location) {
   let path = location.split('/')
   if (path.length === 0) return; // 后续加入
-
-
 }
 
 function render() {
@@ -110,13 +121,7 @@ function createRoute() {
 
 function pathParse(path) {
   // 每次匹配时,检测str最后一位是否是/ 若不是则添加 第一位也许测试
-  var str = "/testPage/:id/action/:add/";
-  var patt = new RegExp(/\/:\w*\//, "g");
-  var result
-  // 匹配 :参数
-  if (!(result = path.exec(str))) {
 
-  }
 }
 
 router.prototype.match = function (path, cur) {
