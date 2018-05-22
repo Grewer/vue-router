@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <router-view/>
+    <button @click="$router.push('/')">回首页</button>
     <button @click="$router.push('/testPage/12')">按钮router.push str</button>
     <button @click="$router.push({path:'/testPage/13',query:{pp:1}})">按钮router.push obj byPath</button>
     <button @click="$router.push({name:'testPage',param:{pp:1}})">按钮router.push obj byName</button>
