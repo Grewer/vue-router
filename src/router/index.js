@@ -170,7 +170,7 @@ var View = {
     data.routerView = true;
     var component = ref.parent._router.curView
     console.dir(router)
-    console.log('run')
+    console.log('View render run')
     return h(ref.parent._router.curView)
   }
 };
@@ -217,6 +217,7 @@ router.prototype.transitionTo = function (location, onComplete, onAbort) { // vu
 
   pushHash(routeObj.toPath)
   this.curView = routeObj.route.component
+  console.log(this)
   // onComplete && onComplete()
   // TODO 添加钩子函数
   // TODO 后续curView= xxx ,pushHash() 省略
@@ -268,6 +269,7 @@ router.install = function (Vue, options) {
         this.$router = this.$parent.$router
         this.$route = this._router.init$route(this)
       }
+      Vue.util.defineReactive(this._router, 'curView', this._router.curView);
     }
   })
   Vue.component('router-view', View)
