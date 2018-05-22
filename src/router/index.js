@@ -1,12 +1,12 @@
 import Vue from 'vue'
 
 var routes
-var curView = null
 
 function router(obj) {
   // constructor
   console.log(obj)
   this.apps = [];
+  this.curView = null
   var resolveArr = [],
     pendingArr = []
   // 假设 钩子
@@ -77,16 +77,10 @@ function matcherByName(name) {
   }
 }
 
-function render() {
-  console.log('运行检测', 'render run')
-  var hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
-  pushHash(hash)
-  curView = matcher(hash).component
-}
 
 router.prototype.init = function (app) {
   // vue 初始化时
-  render(); // 后续修改
+  this.update() // 后续修改
 
 
   this.apps.push(app);
@@ -99,6 +93,14 @@ router.prototype.init = function (app) {
   //  console.dir(history)
   this.init$router(app)
   this.init$route(app)
+}
+
+
+router.prototype.update = function () {
+  console.log('运行检测', 'render run')
+  var hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
+  pushHash(hash)
+  this.curView = matcher(hash).component
 }
 
 function createRoute() {
@@ -151,6 +153,27 @@ router.prototype.init$route = function (app) {
   }
 
 }
+var View = {
+  name: 'router-view',
+  functional: true,
+  props: {
+    name: {
+      type: String,
+      default: 'default'
+    }
+  },
+  render: function render (_, ref) {
+    console.log(ref)
+    var parent = ref.parent;
+    var data = ref.data;
+    var h = parent.$createElement;
+    data.routerView = true;
+    var component = ref.parent._router.curView
+    console.dir(router)
+    console.log('run')
+    return h(ref.parent._router.curView)
+  }
+};
 
 router.prototype.parse = function (location) {
   console.log(location)
@@ -193,10 +216,11 @@ router.prototype.transitionTo = function (location, onComplete, onAbort) { // vu
   }
 
   pushHash(routeObj.toPath)
-  curView = routeObj.component
-  onComplete && onComplete()
+  this.curView = routeObj.route.component
+  // onComplete && onComplete()
   // TODO 添加钩子函数
-
+  // TODO 后续curView= xxx ,pushHash() 省略
+  // TODO 添加 route 生成,在 conComplete 使用时将route 传递给他 当做参数 她在调用时 pushHash
   // this.confirmTransition(route, function () {
   //   this$1.updateRoute(route);
   //   onComplete && onComplete(route);
@@ -236,7 +260,6 @@ router.install = function (Vue, options) {
     beforeCreate: function () {
       //检测是否有 router 参数，从而进行初始化的机会
 
-
       if (this.$options.router) {
         this._router = this.$options.router// new App 接受的router
         this._router.init(this)
@@ -245,17 +268,9 @@ router.install = function (Vue, options) {
         this.$router = this.$parent.$router
         this.$route = this._router.init$route(this)
       }
-      // this.$route = {}// 当前页面信息
-      // this.$router = {}//页面操作
     }
   })
-  Vue.component('router-view', {
-    render: function (h) {
-      return h(
-        curView
-      )
-    }
-  })
+  Vue.component('router-view', View)
 }
 
 
