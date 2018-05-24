@@ -3,8 +3,12 @@
     <router-view/>
     <button @click="$router.push('/')">回首页</button>
     <button @click="$router.push('/testPage/12')">按钮router.push str</button>
-    <button @click="$router.push({path:'/testPage/13',query:{pp:1}})">按钮router.push obj byPath</button>
-    <button @click="$router.push({name:'testPage',param:{pp:1}})">按钮router.push obj byName</button>
+    <button @click="$router.push({path:'/testPage/13'})">按钮router.push obj byPath</button>
+    <button @click="$router.push({name:'testPage'})">按钮router.push obj byName</button>
+    <h3>path中带query:</h3>
+    <button @click="$router.push('/testPage/12?test=5')">按钮router.push str+query</button>
+    <button @click="$router.push({path:'/testPage/13',query:{pp:1}})">按钮router.push obj+query</button>
+    <button @click="$router.push({path:'/testPage/13?test=7'})">按钮router.push+query obj</button>
   </div>
 </template>
 

@@ -162,41 +162,73 @@ var View = {
       default: 'default'
     }
   },
-  render: function render (_, ref) {
-    console.log(ref)
+  render: function render(_, ref) {
+    // console.log(ref)
     var parent = ref.parent;
     var data = ref.data;
     var h = parent.$createElement;
     data.routerView = true;
     var component = ref.parent._router.curView
-    console.dir(router)
-    console.log('View render run')
-    return h(ref.parent._router.curView)
+    // console.dir(router)
+    // console.log('View render run')
+    return h(component)
   }
 };
 
-router.prototype.parse = function (location) {
-  console.log(location)
-  // 统一返回一个 path object
-  var toPath, route
-  // TODO 之前去除?后的query
-  if (location.path) {
-    // path
-    route = matcher(location.path)
-    toPath = location.hash
-  } else if (location.name) {
-    // name
-    route = matcherByName(location.name)
-    toPath = route.path
-  } else {
-    route = matcher(location)
-    toPath = location
+function splitQuery(path) {
+  // 将路由中的 query 分离出来
+  var path = path || '', query = {}
+  var check = path.indexOf('?')
+  if (check > -1) {
+    var arr = path.substr(check + 1).split('&')
+    console.log(arr)
+    arr.forEach(function (i) {
+      var poi = i.indexOf('=');
+      query[i.substr(0, poi)] = i.substr(poi + 1)
+    })
+    path = path.substr(0, check)
   }
-  return {route: route, toPath: toPath}
+
+  return {
+    path: path,
+    query: query
+  }
 }
 
+router.prototype.parse = function (location) {
+  var toPath, route, correct = true, query = {}
+  console.log(location)
+  if (location.path) {
+    location = splitQuery(location.path)
+    query = location.query
+    route = matcher(location.path)
+    toPath = location.path
+  } else if (location.name) {
+    // name
+    // 检验 path 是否需要 数据
+    route = matcherByName(location.name)
+    toPath = route.path
+    if (toPath.indexOf(':') > -1) {
+      correct = false
+    }
+  } else {
+    location = splitQuery(location)
+    query = location.query
+    route = matcher(location.path)
+    toPath = location.path
+  }
+  return {route: route, toPath: toPath, correct: correct, query: query}
+  // route 传入的参数对象
+  // toPath 纯路由 下一步会进入的路由  不包含 ?q=1 等参数
+  // correct 路由是否正确 若用 name 进入路由但是路由需要参数 则会将此参数变为false
+  // query 路由的 query
+
+}
+
+
+
 function checkIsRepeat(path) {
-  return  path === window.location.hash.substring(1)
+  return path === window.location.hash.substring(1)
 }
 
 router.prototype.transitionTo = function (location, onComplete, onAbort) { // vue router 中的函数
@@ -214,10 +246,9 @@ router.prototype.transitionTo = function (location, onComplete, onAbort) { // vu
   if (checkIsRepeat(routeObj.toPath)) {
     return onAbort && onAbort()
   }
-
+  console.log(routeObj)
   pushHash(routeObj.toPath)
   this.curView = routeObj.route.component
-  console.log(this)
   // onComplete && onComplete()
   // TODO 添加钩子函数
   // TODO 后续curView= xxx ,pushHash() 省略
