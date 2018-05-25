@@ -65,6 +65,7 @@ function matcher(path) {
       return routes[i]
     }
   }
+  // 待加入未知数的value进routes里
   // 若path是 '/', 则会返回 '/' 路径;
   // 若不是, 当匹配到 '/' 时, 则会继续循环
 }
@@ -80,8 +81,9 @@ function matcherByName(name) {
 
 router.prototype.init = function (app) {
   // vue 初始化时
-  this.update() // 后续修改
-
+  var hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
+  pushHash(hash)
+  this.curView = matcher(hash).component
 
   this.apps.push(app);
   // main app already initialized.
@@ -96,11 +98,13 @@ router.prototype.init = function (app) {
 }
 
 
-router.prototype.update = function () {
+router.prototype.update = function (route) {
   console.log('运行检测', 'render run')
-  var hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
-  pushHash(hash)
-  this.curView = matcher(hash).component
+
+  pushHash(addQuery(route.toPath, route.query))
+  this.curView = route.route.component
+
+
 }
 
 function createRoute() {
@@ -181,7 +185,6 @@ function splitQuery(path) {
   var check = path.indexOf('?')
   if (check > -1) {
     var arr = path.substr(check + 1).split('&')
-    console.log(arr)
     arr.forEach(function (i) {
       var poi = i.indexOf('=');
       query[i.substr(0, poi)] = i.substr(poi + 1)
@@ -197,10 +200,12 @@ function splitQuery(path) {
 
 router.prototype.parse = function (location) {
   var toPath, route, correct = true, query = {}
-  console.log(location)
   if (location.path) {
+    query = location.query // obj中的query
     location = splitQuery(location.path)
-    query = location.query
+    if (JSON.stringify(location.query) !== '{}') {
+      query = location.query // 路由path中的query
+    }
     route = matcher(location.path)
     toPath = location.path
   } else if (location.name) {
@@ -226,9 +231,19 @@ router.prototype.parse = function (location) {
 }
 
 
-
 function checkIsRepeat(path) {
   return path === window.location.hash.substring(1)
+}
+
+function addQuery(path, query) {
+  let q = ''
+  for (var i in query) {
+    q += '&' + i + '=' + query[i]
+  }
+  if (q) {
+    return path + '?' + q.substr(1)
+  }
+  return path
 }
 
 router.prototype.transitionTo = function (location, onComplete, onAbort) { // vue router 中的函数
@@ -242,14 +257,23 @@ router.prototype.transitionTo = function (location, onComplete, onAbort) { // vu
   // location 可能是一个字符串也可能是一个对象 含有 path name param query 等
 
   var routeObj = this.parse(location); //匹配路径
-  // 判断是否相等
-  if (checkIsRepeat(routeObj.toPath)) {
-    return onAbort && onAbort()
-  }
   console.log(routeObj)
-  pushHash(routeObj.toPath)
-  this.curView = routeObj.route.component
-  // onComplete && onComplete()
+  if (routeObj.correct) {
+    // 检验参数是否完整
+    // TODO 当 query 变化时 是否还是同一个path
+    if (checkIsRepeat(routeObj.toPath)) {
+      //与当前路由重复
+      return onAbort && onAbort()
+    }
+    // 改变路由和组件
+    this.update(routeObj)
+
+
+  } else {
+    console.error('缺少参数的路径')
+  }
+
+
   // TODO 添加钩子函数
   // TODO 后续curView= xxx ,pushHash() 省略
   // TODO 添加 route 生成,在 conComplete 使用时将route 传递给他 当做参数 她在调用时 pushHash
