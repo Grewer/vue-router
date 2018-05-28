@@ -100,11 +100,7 @@ router.prototype.init = function (app) {
 
 router.prototype.update = function (route) {
   console.log('运行检测', 'render run')
-
-  pushHash(addQuery(route.toPath, route.query))
   this.curView = route.route.component
-
-
 }
 
 function createRoute() {
@@ -128,12 +124,15 @@ router.prototype.init$router = function (app) {
     push: function (location, onComplete, onAbort) {
       // location 接收一个字符串或对象
       $this.transitionTo(location, function (route) {
-        pushHash(route.fullPath)
+        pushHash(addQuery(route.toPath, route.query))
         onComplete && onComplete(route);
       }, onAbort)
     },
-    replace: function () {
-
+    replace: function (location, onComplete, onAbort) {
+      $this.transitionTo(location, function (route) {
+        replaceHash(addQuery(route.toPath, route.query))
+        onComplete && onComplete(route);
+      }, onAbort)
     },
     back: function () {
 
@@ -143,9 +142,6 @@ router.prototype.init$router = function (app) {
     },
     forward: function () {
 
-    },
-    match: function (location, current) {
-      console.log(location, current)
     }
   }
 }
@@ -154,6 +150,11 @@ router.prototype.init$route = function (app) {
   //
   return {
     fullPath: location.href,
+    path: '',
+    query: {},
+    params: {},
+    name: '',
+    meta: {}
   }
 
 }
@@ -201,9 +202,10 @@ function splitQuery(path) {
 router.prototype.parse = function (location) {
   var toPath, route, correct = true, query = {}
   if (location.path) {
+    // obj 中的query会覆盖 path中的query
     query = location.query // obj中的query
     location = splitQuery(location.path)
-    if (JSON.stringify(location.query) !== '{}') {
+    if (!query) {
       query = location.query // 路由path中的query
     }
     route = matcher(location.path)
@@ -238,7 +240,7 @@ function checkIsRepeat(path) {
 function addQuery(path, query) {
   let q = ''
   for (var i in query) {
-    q += '&' + i + '=' + query[i]
+    q += '&' + encodeURIComponent(i) + '=' + encodeURIComponent(query[i])
   }
   if (q) {
     return path + '?' + q.substr(1)
@@ -260,14 +262,14 @@ router.prototype.transitionTo = function (location, onComplete, onAbort) { // vu
   console.log(routeObj)
   if (routeObj.correct) {
     // 检验参数是否完整
-    // TODO 当 query 变化时 是否还是同一个path
-    if (checkIsRepeat(routeObj.toPath)) {
+    // 当 query 变化时 不是同一个path
+    if (checkIsRepeat(addQuery(routeObj.toPath, routeObj.query))) {
       //与当前路由重复
       return onAbort && onAbort()
     }
     // 改变路由和组件
+    onComplete(routeObj) // todo 加入生成的 route
     this.update(routeObj)
-
 
   } else {
     console.error('缺少参数的路径')
@@ -275,7 +277,6 @@ router.prototype.transitionTo = function (location, onComplete, onAbort) { // vu
 
 
   // TODO 添加钩子函数
-  // TODO 后续curView= xxx ,pushHash() 省略
   // TODO 添加 route 生成,在 conComplete 使用时将route 传递给他 当做参数 她在调用时 pushHash
   // this.confirmTransition(route, function () {
   //   this$1.updateRoute(route);
@@ -303,6 +304,12 @@ router.prototype.transitionTo = function (location, onComplete, onAbort) { // vu
 function pushHash(hash, params) {
   history.pushState(params || '', '', '#' + hash)
 }
+
+function replaceHash(hash, params) {
+  history.replaceState(params || '', '', '#' + hash)
+}
+
+
 
 window.onhashchange = function (urlData) {
   console.log(urlData)

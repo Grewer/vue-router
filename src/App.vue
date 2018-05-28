@@ -9,6 +9,8 @@
     <button @click="$router.push('/testPage/12?test=5')">按钮router.push str+query</button>
     <button @click="$router.push({path:'/testPage/13',query:{pp:1}})">按钮router.push obj+query</button>
     <button @click="$router.push({path:'/testPage/13?test=7'})">按钮router.push+query obj</button>
+    <button @click="$router.push({path:'/testPage/13?tt=我的数据'})">按钮router.push+query 中文</button>
+    <button @click="$router.push({path:'/testPage/13',query:{my:'测试'}})">按钮router.push+query 中文</button>
   </div>
 </template>
 
