@@ -54,28 +54,27 @@ class Router {
 
   init$router(app) {
     //每个页面都相同
-    let $this = this;
     app.$router = {
-      push: function (location, onComplete, onAbort) {
+      push (location, onComplete, onAbort) {
         // location 接收一个字符串或对象
-        $this.transitionTo(location, function (route) {
+        this.transitionTo(location, function (route) {
           pushHash(addQuery(route.toPath, route.query))
           onComplete && onComplete(route);
         }, onAbort)
       },
-      replace: function (location, onComplete, onAbort) {
-        $this.transitionTo(location, function (route) {
+      replace (location, onComplete, onAbort) {
+        this.transitionTo(location, function (route) {
           replaceHash(addQuery(route.toPath, route.query))
           onComplete && onComplete(route);
         }, onAbort)
       },
-      back: function () {
+      back () {
 
       },
-      go: function () {
+      go () {
 
       },
-      forward: function () {
+      forward () {
 
       }
     }
