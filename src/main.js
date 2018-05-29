@@ -5,7 +5,7 @@ import App from './App'
 
 Vue.config.productionTip = false
 
-import router from './router/page'
+import router from './page'
 
 
 

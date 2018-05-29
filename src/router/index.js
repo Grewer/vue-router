@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import {foreach} from './utils'
 
 let routes
 
@@ -12,18 +13,17 @@ class Router {
       pendingArr = []
     // 假设 钩子
     let {routes = []} = obj;
-    for (let i = 0, l = routes.length; i < l; i++) {
-      let cur = routes[i];
-      let match = patch(cur.path).replace(/\//g, '\\/')
-      if (cur.path.indexOf(':') > -1) {
+    foreach(routes, item => {
+      let match = patch(item.path).replace(/\//g, '\\/')
+      if (item.path.indexOf(':') > -1) {
         // 有属性
         let m = path2Regexp(match)
-        cur.match = m.match
-        cur.key = m.key
+        item.match = m.match
+        item.key = m.key
       } else {
-        cur.match = match
+        item.match = match
       }
-    }
+    })
     this.routes = routes
     console.log(this.routes)
     // 将所有 options 路由,转出一个 match 正则
@@ -246,25 +246,26 @@ function path2Regexp(path) {
 
 function matcher(routes, path) {
   path = patch(path)
-  for (let i = 0, l = routes.length; i < l; i++) {
-    if (path.match(new RegExp(routes[i].match))) {
-      if (routes[i].path === '/' && path !== '/') {
-        continue
+  return foreach(routes, item => {
+    if (path.match(new RegExp(item.match))) {
+      if (item.path === '/' && path !== '/') {
+        return 0
       }
-      return routes[i]
+      return item
     }
-  }
+  })
+
   // 待加入未知数的value进routes里
   // 若path是 '/', 则会返回 '/' 路径;
   // 若不是, 当匹配到 '/' 时, 则会继续循环
 }
 
 function matcherByName(routes, name) {
-  for (let i = 0, l = routes.length; i < l; i++) {
-    if (routes[i].name === name) {
-      return routes[i]
+  return foreach(routes, item => {
+    if (item.name === name) {
+      return item
     }
-  }
+  })
 }
 
 function splitQuery(path = '') {
@@ -273,7 +274,7 @@ function splitQuery(path = '') {
   let check = path.indexOf('?')
   if (check > -1) {
     let arr = path.substr(check + 1).split('&')
-    arr.forEach(function (i) {
+    arr.forEach(i => {
       let poi = i.indexOf('=');
       query[i.substr(0, poi)] = i.substr(poi + 1)
     })
@@ -315,7 +316,7 @@ window.onhashchange = function (urlData) {
 }
 
 
-Router.install = function (Vue, options) {
+Router.install = (Vue, options) => {
   // 插件绑定 还未 new
 
   Vue.mixin({

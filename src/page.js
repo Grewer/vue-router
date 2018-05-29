@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Router from './index'
+import Router from './router/index'
 
 import hello from '@/components/HelloWorld'
 
