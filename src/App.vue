@@ -6,11 +6,12 @@
     <button @click="$router.push({path:'/testPage/13'})">按钮router.push obj byPath</button>
     <button @click="$router.push({name:'testPage'})">按钮router.push obj byName</button>
     <h3>path中带query:</h3>
-    <button @click="$router.push('/testPage/12?test=5')">按钮router.push str+query</button>
-    <button @click="$router.push({path:'/testPage/13',query:{pp:1}})">按钮router.push obj+query</button>
-    <button @click="$router.push({path:'/testPage/13?test=7'})">按钮router.push+query obj</button>
-    <button @click="$router.push({path:'/testPage/13?tt=我的数据'})">按钮router.push+query 中文</button>
-    <button @click="$router.push({path:'/testPage/13',query:{my:'测试'}})">按钮router.push+query 中文</button>
+    <button @click="$router.push('/testPage/12?test=5')">按钮router.push str</button>
+    <button @click="$router.push({path:'/testPage/13',query:{pp:1}})">按钮router.push obj</button>
+    <button @click="$router.push({path:'/testPage/13?test=7'})">按钮router.push obj</button>
+    <button @click="$router.push({path:'/testPage/13?tt=我的数据'})">按钮router.push 中文</button>
+    <button @click="$router.push({path:'/testPage/13',query:{my:'测试'}})">按钮router.push 中文</button>
+    <button @click="$router.push({name:'BarFoo',query:{tt:'bar foo'}})">按钮router.push+name</button>
   </div>
 </template>
 
