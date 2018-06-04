@@ -5,7 +5,7 @@ import {foreach} from './utils'
 class Router {
   constructor(obj) {
     // constructor
-    this.curView = null
+    this.current = null
     let resolveArr = [],
       pendingArr = []
     // 假设 钩子
@@ -29,28 +29,31 @@ class Router {
   init(app) {
     // app 根组件
     // vue 初始化时
-    let hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
-    pushHash(hash)
-    this.curView = matcher(this.routes, hash).component
-
     // main app already initialized.
     if (this.app) {
       return
     }
     this.app = app
+    this.setupListeners()
+    let hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
+    pushHash(hash)
+    this.current = matcher(this.routes, hash).component
 
-    this.init$router(app)
-    this.init$route(app)
+    app._router = this.init$router()
+    app._router.current = this.init$route(this.current)
+
   }
 
   update(route) {
-    console.log('运行检测', 'render run')
-    this.curView = route.route.component
+    console.log('update', 'render run')
+    this.current = route.route.component
+    this.app._route = this.init$route(this.current)
+    console.log(this.app)
   }
 
-  init$router(app) {
+  init$router() {
     //每个页面都相同
-    app.$router = {
+    return {
       push: (location, onComplete, onAbort) => {
         // location 接收一个字符串或对象
         this.transitionTo(location, function (route) {
@@ -77,10 +80,10 @@ class Router {
 
   }
 
-  init$route(app) {
-    console.log('app', app)
-    console.log(this)
-    console.log(app._router.curView)
+  init$route(current) {
+    // console.log('app', app)
+    // console.log(this)
+    // console.log(app._router.current)
     return {
       fullPath: location.href,
       path: location.path || '/',
@@ -88,7 +91,8 @@ class Router {
       query: {},
       params: {},
       name: '',
-      meta: {}
+      meta: {},
+      current
     }
     // let route = {
     //   name: location.name || (record && record.name),
@@ -162,26 +166,19 @@ class Router {
 
     // TODO 添加钩子函数
     // TODO 添加 route 生成,在 conComplete 使用时将route 传递给他 当做参数 她在调用时 pushHash
-    // this.confirmTransition(route, function () {
-    //   this$1.updateRoute(route);
-    //   onComplete && onComplete(route);
-    //   this$1.ensureURL();
-    //
-    //   // fire ready cbs once
-    //   if (!this$1.ready) {
-    //     this$1.ready = true;
-    //     this$1.readyCbs.forEach(function (cb) { cb(route); });
-    //   }
-    // }, function (err) {
-    //   if (onAbort) {
-    //     onAbort(err);
-    //   }
-    //   if (err && !this$1.ready) {
-    //     this$1.ready = true;
-    //     this$1.readyErrorCbs.forEach(function (cb) { cb(err); });
-    //   }
-    // });
 
+  }
+
+
+  setupListeners() {
+    window.addEventListener('hashchange', () => {
+      console.log('hash change run')
+      // 使用 push 变化时不会触发
+      // todo
+      // this.transitionTo(getHash(), route => {
+      //   replaceHash(route.fullPath)
+      // })
+    })
   }
 }
 
@@ -212,10 +209,10 @@ let View = {
   render(_, ref) {
     // console.log(ref)
     let parent = ref.parent;
-    let data = ref.data;
+    // let data = ref.data;
     let h = parent.$createElement;
-    data.routerView = true;
-    let component = ref.parent._router.curView
+    // data.routerView = true;
+    let component = parent._routerRoot._route.current
     // console.dir(router)
     // console.log('View render run')
     return h(component)
@@ -323,26 +320,42 @@ window.onhashchange = function (urlData) {
 }
 
 
-Router.install = (Vue, options) => {
+Router.install = function (Vue, options) {
   // 插件绑定 还未 new
-
+  // console.dir(this)
   Vue.mixin({
     beforeCreate() {
       // 每次 components 的改变都会催动此函数
 
       //检测是否有 router 参数，从而进行初始化的机会
       // console.log('before create')
-      // console.log(this) // this 指向当前组件
-      if (this.$options.router) { // 根组件
+      // console.log(this)
+
+      // this 指向当前组件
+      if (this.$options.router) {
+        // this->
+        // 不一定是根组件 待定
+        this._routerRoot = this
         this._router = this.$options.router// new App 接受的router
         this._router.init(this)
-        Vue.util.defineReactive(this._router, 'curView', this._router.curView);
+        Vue.util.defineReactive(this, '_route', this._router.current);
+        //current 为当前对象
       } else {
-        this._router = this.$parent._router;
-        // this 中需要使用的两个函数
-        this.$router = this.$parent.$router; // 都指向同一个函数
-        this.$route = this._router.init$route(this)
+        this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
+        // 当前组件
+
       }
+    }
+  })
+  Object.defineProperty(Vue.prototype, '$router', {
+    get() {
+      return this._routerRoot._router
+    }
+  })
+
+  Object.defineProperty(Vue.prototype, '$route', {
+    get() {
+      return this._routerRoot._route
     }
   })
   Vue.component('router-view', View)

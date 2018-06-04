@@ -17,7 +17,7 @@ In development
 
 ### 官方实例 vueRouter 的 API
 
-vueRouter 函数:
+vueRouter 函数 :
 - afterHooks 数组
 - app 组件对象 指向app
 - apps 组件数组
@@ -29,7 +29,7 @@ vueRouter 函数:
 - options 传入 vueRouter 的选项
 - resolveHooks resolve钩子回调函数的数组
 
-vueRouter.prototype 函数:
+vueRouter.prototype 函数 :
 - addRouters 动态添加路由
 - afterEach 每一次跳转路由后调用的函数
 - back 返回上一个路由
@@ -70,6 +70,5 @@ vueRouter.prototype 函数:
 - [https://segmentfault.com/p/1210000009973331/read](https://segmentfault.com/p/1210000009973331/read)
 - [https://router.vuejs.org/zh-cn/](https://router.vuejs.org/zh-cn/)
 - [vue-router.js 源码](https://github.com/vuejs/vue-router/blob/dev/dist/vue-router.js)
-- [http://www.php.cn/js-tutorial-386472.html](http://www.php.cn/js-tutorial-386472.html)
 - [http://cnodejs.org/topic/58d680c903d476b42d34c72b](http://cnodejs.org/topic/58d680c903d476b42d34c72b)
 
