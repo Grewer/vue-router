@@ -1,13 +1,10 @@
 import Vue from 'vue'
 import {foreach} from './utils'
 
-let routes
 
 class Router {
   constructor(obj) {
     // constructor
-    console.log(obj)
-    this.apps = [];
     this.curView = null
     let resolveArr = [],
       pendingArr = []
@@ -30,19 +27,18 @@ class Router {
   }
 
   init(app) {
+    // app 根组件
     // vue 初始化时
     let hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
     pushHash(hash)
     this.curView = matcher(this.routes, hash).component
 
-    this.apps.push(app);
     // main app already initialized.
     if (this.app) {
       return
     }
     this.app = app
-    //初始化 history api
-    //  console.dir(history)
+
     this.init$router(app)
     this.init$route(app)
   }
@@ -55,41 +51,53 @@ class Router {
   init$router(app) {
     //每个页面都相同
     app.$router = {
-      push (location, onComplete, onAbort) {
+      push: (location, onComplete, onAbort) => {
         // location 接收一个字符串或对象
         this.transitionTo(location, function (route) {
           pushHash(addQuery(route.toPath, route.query))
           onComplete && onComplete(route);
         }, onAbort)
       },
-      replace (location, onComplete, onAbort) {
+      replace: (location, onComplete, onAbort) => {
         this.transitionTo(location, function (route) {
           replaceHash(addQuery(route.toPath, route.query))
           onComplete && onComplete(route);
         }, onAbort)
       },
-      back () {
-
+      back() {
+        history.back()
       },
-      go () {
-
+      go(n) {
+        history.go(n)
       },
-      forward () {
-
+      forward() {
+        history.forward()
       }
     }
 
   }
 
   init$route(app) {
+    console.log('app', app)
+    console.log(this)
+    console.log(app._router.curView)
     return {
       fullPath: location.href,
-      path: '',
+      path: location.path || '/',
+      hash: location.hash || '',
       query: {},
       params: {},
       name: '',
       meta: {}
     }
+    // let route = {
+    //   name: location.name || (record && record.name),
+    //   meta: (record && record.meta) || {},
+    //   query: query,
+    //   params: location.params || {},
+    //   fullPath: getFullPath(location, stringifyQuery$$1),
+    //   matched: record ? formatMatch(record) : []
+    // };
   }
 
   parse(location) {
@@ -320,17 +328,21 @@ Router.install = (Vue, options) => {
 
   Vue.mixin({
     beforeCreate() {
-      //检测是否有 router 参数，从而进行初始化的机会
+      // 每次 components 的改变都会催动此函数
 
-      if (this.$options.router) {
+      //检测是否有 router 参数，从而进行初始化的机会
+      // console.log('before create')
+      // console.log(this) // this 指向当前组件
+      if (this.$options.router) { // 根组件
         this._router = this.$options.router// new App 接受的router
         this._router.init(this)
+        Vue.util.defineReactive(this._router, 'curView', this._router.curView);
       } else {
         this._router = this.$parent._router;
-        this.$router = this.$parent.$router
+        // this 中需要使用的两个函数
+        this.$router = this.$parent.$router; // 都指向同一个函数
         this.$route = this._router.init$route(this)
       }
-      Vue.util.defineReactive(this._router, 'curView', this._router.curView);
     }
   })
   Vue.component('router-view', View)

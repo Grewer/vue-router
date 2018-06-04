@@ -9,10 +9,6 @@ In development
 路由 path 暂只支持 'foo/:id'
 暂不支持 children // 后续加入
 
-
-1. router and route object
-2. path resolve
-
 ### main api:
 
 - location

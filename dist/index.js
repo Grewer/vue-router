@@ -65,17 +65,16 @@ var Router = function () {
     key: 'init$router',
     value: function init$router(app) {
       //每个页面都相同
-      var $this = this;
       app.$router = {
         push: function push(location, onComplete, onAbort) {
           // location 接收一个字符串或对象
-          $this.transitionTo(location, function (route) {
+          this.transitionTo(location, function (route) {
             pushHash(addQuery(route.toPath, route.query));
             onComplete && onComplete(route);
           }, onAbort);
         },
         replace: function replace(location, onComplete, onAbort) {
-          $this.transitionTo(location, function (route) {
+          this.transitionTo(location, function (route) {
             replaceHash(addQuery(route.toPath, route.query));
             onComplete && onComplete(route);
           }, onAbort);

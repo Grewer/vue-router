@@ -12,6 +12,7 @@
     <button @click="$router.push({path:'/testPage/13?tt=我的数据'})">按钮router.push 中文</button>
     <button @click="$router.push({path:'/testPage/13',query:{my:'测试'}})">按钮router.push 中文</button>
     <button @click="$router.push({name:'BarFoo',query:{tt:'bar foo'}})">按钮router.push+name</button>
+
   </div>
 </template>
 
