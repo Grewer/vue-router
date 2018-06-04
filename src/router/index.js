@@ -37,10 +37,13 @@ class Router {
     this.setupListeners()
     let hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
     pushHash(hash)
-    this.current = matcher(this.routes, hash).component
 
+    // const route =   {route, toPath, correct, query} // todo 将初始化的组件同时与update时形成同一个obj
+    // this.init$route(route)
+
+    this.current = matcher(this.routes, hash).component
     app._router = this.init$router()
-    app._router.current = this.init$route(this.current)
+    app._route = this.init$route(this.current)
 
   }
 
@@ -48,7 +51,6 @@ class Router {
     console.log('update', 'render run')
     this.current = route.route.component
     this.app._route = this.init$route(this.current)
-    console.log(this.app)
   }
 
   init$router() {
@@ -84,6 +86,7 @@ class Router {
     // console.log('app', app)
     // console.log(this)
     // console.log(app._router.current)
+    console.log(current)
     return {
       fullPath: location.href,
       path: location.path || '/',
@@ -338,7 +341,8 @@ Router.install = function (Vue, options) {
         this._routerRoot = this
         this._router = this.$options.router// new App 接受的router
         this._router.init(this)
-        Vue.util.defineReactive(this, '_route', this._router.current);
+        Vue.util.defineReactive(this, '_route', this._route);
+        // this._route = this._route
         //current 为当前对象
       } else {
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
