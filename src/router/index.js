@@ -36,21 +36,18 @@ class Router {
     this.app = app
     this.setupListeners()
     let hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
+    let route = this.parse(hash)
     pushHash(hash)
+    this.update(route)
 
-    // const route =   {route, toPath, correct, query} // todo 将初始化的组件同时与update时形成同一个obj
-    // this.init$route(route)
-
-    this.current = matcher(this.routes, hash).component
     app._router = this.init$router()
-    app._route = this.init$route(this.current)
 
   }
 
   update(route) {
     console.log('update', 'render run')
     this.current = route.route.component
-    this.app._route = this.init$route(this.current)
+    this.app._route = this.init$route(route)
   }
 
   init$router() {
@@ -82,29 +79,19 @@ class Router {
 
   }
 
-  init$route(current) {
-    // console.log('app', app)
-    // console.log(this)
-    // console.log(app._router.current)
-    console.log(current)
+  init$route(route) {
+    console.log(route)
+    let {query,toPath} = route
+    route = route.route
     return {
-      fullPath: location.href,
-      path: location.path || '/',
-      hash: location.hash || '',
-      query: {},
+      fullPath:addQuery(toPath,query), // path + hash
+      path: toPath,
+      query,
       params: {},
-      name: '',
+      name: route.name,
       meta: {},
-      current
+      current:route.component
     }
-    // let route = {
-    //   name: location.name || (record && record.name),
-    //   meta: (record && record.meta) || {},
-    //   query: query,
-    //   params: location.params || {},
-    //   fullPath: getFullPath(location, stringifyQuery$$1),
-    //   matched: record ? formatMatch(record) : []
-    // };
   }
 
   parse(location) {
@@ -137,6 +124,7 @@ class Router {
     // toPath 纯路由 下一步会进入的路由  不包含 ?q=1 等参数
     // correct 路由是否正确 若用 name 进入路由但是路由需要参数 则会将此参数变为false
     // query 路由的 query
+    // todo 获取 key 对应的 value
   }
 
 
