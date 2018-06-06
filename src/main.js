@@ -7,7 +7,9 @@ Vue.config.productionTip = false
 
 import router from './page'
 
-
+router.beforeEach((to, from, next) => {
+  // ...
+})
 
 /* eslint-disable no-new */
 new Vue({

@@ -1,4 +1,3 @@
-import Vue from 'vue'
 import {foreach} from './utils'
 
 
@@ -37,7 +36,11 @@ class Router {
     this.setupListeners()
     let hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
     let route = this.parse(hash)
-    pushHash(hash)
+    const state = history.state
+    pushHash(hash, state)
+    if(Object.keys(state).length !== 0){
+      route.params = state
+    }
     this.update(route)
 
     app._router = this.init$router()
@@ -45,7 +48,7 @@ class Router {
   }
 
   update(route) {
-    console.log('update', 'render run')
+    console.log('update')
     this.current = route.route.component
     this.app._route = this.init$route(route)
   }
@@ -56,13 +59,13 @@ class Router {
       push: (location, onComplete, onAbort) => {
         // location 接收一个字符串或对象
         this.transitionTo(location, function (route) {
-          pushHash(addQuery(route.toPath, route.query))
+          pushHash(addQuery(route.toPath, route.query), route.params)
           onComplete && onComplete(route);
         }, onAbort)
       },
       replace: (location, onComplete, onAbort) => {
         this.transitionTo(location, function (route) {
-          replaceHash(addQuery(route.toPath, route.query))
+          replaceHash(addQuery(route.toPath, route.query), route.params)
           onComplete && onComplete(route);
         }, onAbort)
       },
@@ -81,22 +84,23 @@ class Router {
 
   init$route(route) {
     console.log(route)
-    let {query,toPath} = route
+    const {query, toPath, params} = route
     route = route.route
+    const {name, meta} = route
     return {
-      fullPath:addQuery(toPath,query), // path + hash
+      fullPath: addQuery(toPath, query), // path + hash
       path: toPath,
       query,
-      params: {},
-      name: route.name,
-      meta: {},
-      current:route.component
+      params,
+      name,
+      meta,
+      current: route.component
     }
   }
 
   parse(location) {
     let toPath, route, correct = true
-    let query = location.query || {}
+    let {params = {}, query = {}} = location
     if (location.path) {
       // obj 中的query会覆盖 path中的query
       location = splitQuery(location.path)
@@ -119,12 +123,17 @@ class Router {
       // 若原location中没有 query,则path中的query会覆盖
       query = location.query || {} // 路由path中的query
     }
-    return {route, toPath, correct, query}
+    return {route, toPath, correct, query, params}
     // route 传入的参数对象
     // toPath 纯路由 下一步会进入的路由  不包含 ?q=1 等参数
     // correct 路由是否正确 若用 name 进入路由但是路由需要参数 则会将此参数变为false
     // query 路由的 query
     // todo 获取 key 对应的 value
+  }
+
+  beforeEach(cb) {
+    // 全局cb
+    console.log(cb)
   }
 
 
@@ -138,7 +147,7 @@ class Router {
     // location 可能是一个字符串也可能是一个对象 含有 path name param query 等
 
     let routeObj = this.parse(location); //匹配路径
-    console.log(routeObj)
+    // console.log(routeObj)
     if (routeObj.correct) {
       // 检验参数是否完整
       // 当 query 变化时 不是同一个path
@@ -171,20 +180,6 @@ class Router {
       // })
     })
   }
-}
-
-
-function createRoute() {
-  // let route = {
-  //   name: location.name || (record && record.name),
-  //   meta: (record && record.meta) || {},
-  //   path: location.path || '/',
-  //   hash: location.hash || '',
-  //   query: query,
-  //   params: location.params || {},
-  //   fullPath: getFullPath(location, stringifyQuery$$1),
-  //   matched: record ? formatMatch(record) : []
-  // };
 }
 
 
