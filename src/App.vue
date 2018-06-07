@@ -22,6 +22,8 @@
     <button @click="$router.push('/foo')">按钮router.push+str</button>
     <button @click="$router.push({path:'/foo'})">按钮router.push+path</button>
     <button @click="$router.push({name:'Foo'})">按钮router.push+name</button>
+    <h3>多个参数</h3>
+    <button @click="$router.push('/more/5/oh/add')">按钮router.push str</button>
   </div>
 </template>
 

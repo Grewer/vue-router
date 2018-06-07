@@ -15,6 +15,17 @@ In development
 - history
 
 
+### 本实例钩子流程
+
+#### 进入
+1. 调用全局的 beforeEach
+2. 在路由配置里调用 beforeEnter
+3. 在被激活的组件里调用 beforeRouteEnter
+4. 调用全局的 afterEach 钩子
+5. 调用 beforeRouteEnter 守卫中传给 next 的回调函数
+
+
+
 ### 官方实例 vueRouter 的 API
 
 vueRouter 函数 :
@@ -63,6 +74,8 @@ vueRouter.prototype 函数 :
 2. 路由 init 和 history router 函数是否值执行一次,子组件都是复制父组件的值?
 3. 路由的匹配 使用正则匹配
 4. 嵌套渲染时,不同的 router-view 如何渲染不同的值(或者说是渲染的一个 router-view 组件里仍有 router-view 该如何渲染)
+
+
 
 
 ### 参考文档

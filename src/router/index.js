@@ -5,8 +5,8 @@ class Router {
   constructor(obj) {
     // constructor
     this.current = null
-    let resolveArr = [],
-      pendingArr = []
+    this.resolve = null
+    this.pending = null
     // 假设 钩子
     let {routes = []} = obj;
     foreach(routes, item => {
@@ -38,8 +38,8 @@ class Router {
     let route = this.parse(hash)
     const state = history.state
     pushHash(hash, state)
-    if(Object.keys(state).length !== 0){
-      route.params = state
+    if (Object.keys(state).length !== 0) {
+      route.params = Object.assign(route.params, state)
     }
     this.update(route)
 
@@ -86,7 +86,7 @@ class Router {
     console.log(route)
     const {query, toPath, params} = route
     route = route.route
-    const {name, meta} = route
+    const {name, meta = {}} = route
     return {
       fullPath: addQuery(toPath, query), // path + hash
       path: toPath,
@@ -100,7 +100,7 @@ class Router {
 
   parse(location) {
     let toPath, route, correct = true
-    let {params = {}, query = {}} = location
+    let {query = {}, params = {}} = location
     if (location.path) {
       // obj 中的query会覆盖 path中的query
       location = splitQuery(location.path)
@@ -119,21 +119,24 @@ class Router {
       route = matcher(this.routes, location.path)
       toPath = location.path
     }
+
     if (JSON.stringify(query) === '{}') {
       // 若原location中没有 query,则path中的query会覆盖
       query = location.query || {} // 路由path中的query
+    }
+    // name 如果需要 params 会如何
+    if (route.params) {
+      // path 里的params
+      params = Object.assign(params, route.params)
     }
     return {route, toPath, correct, query, params}
     // route 传入的参数对象
     // toPath 纯路由 下一步会进入的路由  不包含 ?q=1 等参数
     // correct 路由是否正确 若用 name 进入路由但是路由需要参数 则会将此参数变为false
     // query 路由的 query
-    // todo 获取 key 对应的 value
   }
 
   beforeEach(cb) {
-    // 全局cb
-    console.log(cb)
   }
 
 
@@ -156,7 +159,7 @@ class Router {
         return onAbort && onAbort()
       }
       // 改变路由和组件
-      onComplete(routeObj) // todo 加入生成的 route
+      onComplete(routeObj)
       this.update(routeObj)
 
     } else {
@@ -226,7 +229,7 @@ function path2Regexp(path) {
     key.push(path.substring(result.index, patt.lastIndex).slice(2, -2))
     let prev = path.substring(0, result.index)
     let next = path.substring(patt.lastIndex)
-    path = prev + '\/.*?\/' + next
+    path = prev + '\/(.*)?\/' + next
   }
   return {
     match: path,
@@ -237,9 +240,17 @@ function path2Regexp(path) {
 function matcher(routes, path) {
   path = patch(path)
   return foreach(routes, item => {
-    if (path.match(new RegExp(item.match))) {
+    const result = path.match(new RegExp(item.match))
+    if (result) {
       if (item.path === '/' && path !== '/') {
         return 0
+      }
+      if (item.key) {
+        let params = {}
+        item.key.forEach((k, index) => {
+          params[k] = result[1 + index]
+        })
+        return Object.assign({params}, item)
       }
       return item
     }

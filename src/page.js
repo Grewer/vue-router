@@ -41,6 +41,11 @@ export default new Router({
       beforeEnter: (to, from, next) => {
         // ...
       }
+    },
+    {
+      path:'/more/:id/oh/:action',
+      name:'Foo',
+      component:Foo
     }
   ]
 })

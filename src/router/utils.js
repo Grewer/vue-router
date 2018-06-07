@@ -7,7 +7,7 @@ export function foreach(arr, cb) {
       } else if (result === -1) {
         break;
       } else {
-        return arr[i]
+        return result
       }
     }
   }
