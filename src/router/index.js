@@ -38,7 +38,7 @@ class Router {
     let route = this.parse(hash)
     const state = history.state
     pushHash(hash, state)
-    if (Object.keys(state).length !== 0) {
+    if (Object.keys(state || {}).length !== 0) {
       route.params = Object.assign(route.params, state)
     }
     this.update(route)
@@ -336,6 +336,7 @@ Router.install = function (Vue, options) {
         this._router = this.$options.router// new App 接受的router
         this._router.init(this)
         Vue.util.defineReactive(this, '_route', this._route);
+        console.log('run')
         // this._route = this._route
         //current 为当前对象
       } else {
