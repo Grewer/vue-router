@@ -9,6 +9,8 @@ import router from './page'
 
 router.beforeEach((to, from, next) => {
   // ...
+
+  next()
 })
 
 /* eslint-disable no-new */

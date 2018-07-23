@@ -5,8 +5,7 @@ class Router {
   constructor(obj) {
     // constructor
     this.current = null
-    this.resolve = null
-    this.pending = null
+    this.beforeHooks = []
     // 假设 钩子
     let {routes = []} = obj;
     foreach(routes, item => {
@@ -83,7 +82,6 @@ class Router {
   }
 
   init$route(route) {
-    console.log(route)
     const {query, toPath, params} = route
     route = route.route
     const {name, meta = {}} = route
@@ -136,7 +134,8 @@ class Router {
     // query 路由的 query
   }
 
-  beforeEach(cb) {
+  beforeEach(fn) {
+    return registerHook(this.beforeHooks, fn)
   }
 
 
@@ -149,9 +148,9 @@ class Router {
     // 5.若当前路由和想去的路由相同 则触发  onAbort 函数
     // location 可能是一个字符串也可能是一个对象 含有 path name param query 等
 
+
     let routeObj = this.parse(location); //匹配路径
-    // console.log(routeObj)
-    if (routeObj.correct) {
+    this.confirmTransition(routeObj, () => {
       // 检验参数是否完整
       // 当 query 变化时 不是同一个path
       if (checkIsRepeat(addQuery(routeObj.toPath, routeObj.query))) {
@@ -159,17 +158,67 @@ class Router {
         return onAbort && onAbort()
       }
       // 改变路由和组件
+
+      console.log('run')
       onComplete(routeObj)
       this.update(routeObj)
 
-    } else {
-      console.error('缺少参数的路径')
+      // this.readyCbs run
+
+    }, () => {
+      onAbort && onAbort()
+    })
+
+  }
+
+  confirmTransition(route, onComplete, onAbort) {
+    console.log('confirm', this.beforeHooks)
+
+    if (route.correct) {
+      return onAbort && onAbort('相同路由')
     }
 
 
-    // TODO 添加钩子函数
-    // TODO 添加 route 生成,在 conComplete 使用时将route 传递给他 当做参数 她在调用时 pushHash
+    const queue = [].concat(
+      // extractLeaveGuards(deactivated), // 离开的生命周期
+      this.beforeHooks,
+      // activated.map(function (m) {
+      //   return m.beforeEnter;
+      // }) // 组件内的进入生命周期
+    );
 
+    const abort = function (err) {
+      // 暂时如此
+      onAbort && onAbort(err);
+    };
+
+    const current = this.current // 待修改 获取当前的对象
+    const iterator = (hook, next) => {
+      hook(route, current, to => {
+        if (to === false) {
+          abort()
+        } else if (
+          typeof to === 'string' ||
+          (typeof to === 'object' && (
+            typeof to.path === 'string' ||
+            typeof to.name === 'string'
+          ))
+        ) {
+          abort();
+          if (typeof to === 'object' && to.replace) {
+            this.init$router.replace(to);
+          } else {
+            this.init$router.push(to);
+          }
+        } else {
+          next(to);
+        }
+      });
+    }
+
+    runQueue(queue, iterator, () => {
+
+    })
   }
 
 
@@ -208,6 +257,34 @@ let View = {
   }
 };
 
+
+function registerHook(list, fn) { // 注册hook
+  list.push(fn);
+  return function () {
+    var i = list.indexOf(fn);
+    if (i > -1) {
+      list.splice(i, 1);
+    }
+  }
+}
+
+
+function runQueue(queue, fn, cb) { // 运行queue
+  var step = function (index) {
+    if (index >= queue.length) {
+      cb();
+    } else {
+      if (queue[index]) {
+        fn(queue[index], function () {
+          step(index + 1);
+        });
+      } else {
+        step(index + 1);
+      }
+    }
+  };
+  step(0);
+}
 
 function patch(path) {
   // 补全斜杠
@@ -260,6 +337,7 @@ function matcher(routes, path) {
   // 若path是 '/', 则会返回 '/' 路径;
   // 若不是, 当匹配到 '/' 时, 则会继续循环
 }
+
 
 function matcherByName(routes, name) {
   return foreach(routes, item => {
