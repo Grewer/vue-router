@@ -135,7 +135,7 @@ class Router {
   }
 
   beforeEach(fn) {
-    return registerHook(this.beforeHooks, fn)
+    return registerHook(this.beforeHooks, fn) // 注册方法
   }
 
 
@@ -174,10 +174,9 @@ class Router {
   confirmTransition(route, onComplete, onAbort) {
     console.log('confirm', this.beforeHooks)
 
-    if (route.correct) {
-      return onAbort && onAbort('相同路由')
-    }
-
+    // if (route.correct) { // 官方再次判断是否为相同
+    //   return onAbort && onAbort('相同路由')
+    // }
 
     const queue = [].concat(
       // extractLeaveGuards(deactivated), // 离开的生命周期
@@ -193,7 +192,7 @@ class Router {
     };
 
     const current = this.current // 待修改 获取当前的对象
-    const iterator = (hook, next) => {
+    const iterator = (hook, next) => { // hook=>钩子函数  next=>回调函数
       hook(route, current, to => {
         if (to === false) {
           abort()
@@ -217,7 +216,9 @@ class Router {
     }
 
     runQueue(queue, iterator, () => {
-
+      // 此为回调函数
+      console.log('runQueue的第三个参数 所有钩子运行完毕时回调',this.beforeHooks)
+      onComplete()
     })
   }
 
@@ -260,7 +261,7 @@ let View = {
 
 function registerHook(list, fn) { // 注册hook
   list.push(fn);
-  return function () {
+  return function () { // 两个注册的钩子是相同一个(===) 则去除重复
     var i = list.indexOf(fn);
     if (i > -1) {
       list.splice(i, 1);
@@ -269,12 +270,13 @@ function registerHook(list, fn) { // 注册hook
 }
 
 
-function runQueue(queue, fn, cb) { // 运行queue
+function runQueue(queue, fn, cb) { // 运行queue  cb 为所有队列运行完毕的 回调
+                                   // 参数 queue 需要运行的队列 fn
   var step = function (index) {
-    if (index >= queue.length) {
+    if (index >= queue.length) { // 此时钩子已经运行完毕, callback 运行
       cb();
-    } else {
-      if (queue[index]) {
+    } else { // 此时运行队列中的钩子
+      if (queue[index]) { // fn 算是一个包裹的函数 每一次的队列运行都会使用此函数 params {钩子函数,回调函数}
         fn(queue[index], function () {
           step(index + 1);
         });
@@ -282,7 +284,7 @@ function runQueue(queue, fn, cb) { // 运行queue
         step(index + 1);
       }
     }
-  };
+  }; // step 函数
   step(0);
 }
 

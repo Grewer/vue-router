@@ -9,7 +9,7 @@ import router from './page'
 
 router.beforeEach((to, from, next) => {
   // ...
-
+  console.log('main.js中注册的全局钩子 运行')
   next()
 })
 
