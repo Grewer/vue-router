@@ -204,18 +204,14 @@ class Router {
     };
 
     const current = this.current // 获取当前的对象
+    const EnterCbs = []
     const iterator = (hook, next) => { // hook=>钩子函数  next=>回调函数(指全局,组件钩子函数中的 next 参数)
       hook(route, current, to => {
         if (to === false) {
           console.log('run to==false')
           abort()
-        } else if (
-          typeof to === 'string' ||
-          (typeof to === 'object' && (
-            typeof to.path === 'string' ||
-            typeof to.name === 'string'
-          ))
-        ) {
+        } else if (typeof to === 'string' || (typeof to === 'object' && (typeof to.path === 'string' || typeof to.name === 'string'))) {
+          //  符合 next('/test')  或者 next({path:'/test'}) 或者 next({name:'name'})
           abort();
           if (typeof to === 'object' && to.replace) {
             this.init$router().replace(to);
@@ -223,7 +219,9 @@ class Router {
             this.init$router().push(to);
           }
         } else {
-          next(to);
+          // console.warn(to)
+          typeof to === 'function' && EnterCbs.push(to)
+          next(to); //  此 next 是跳到下一个钩子函数上
         }
       });
     }
@@ -232,14 +230,13 @@ class Router {
       // 此为回调函数
       console.log('runQueue的第三个参数 所有钩子运行完毕时回调')
       onComplete()
-      // onComplete(route);
-      // if (this$1.router.app) {
-      //   this$1.router.app.$nextTick(function () {
-      //     postEnterCbs.forEach(function (cb) {
-      //       cb();
-      //     });
-      //   });
-      // }
+      if (EnterCbs.length) {
+        this.app.$nextTick(() => {
+          EnterCbs.forEach(cb => {
+            cb(this.current.route.component)
+          })
+        })
+      }
     })
   }
 
