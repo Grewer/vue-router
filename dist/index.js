@@ -53,7 +53,7 @@ var Router = function () {
       //初始化 history api
       //  console.dir(history)
       this.init$router(app);
-      this.init$route(app);
+      Router.init$route(app);
     }
   }, {
     key: 'update',
@@ -335,7 +335,7 @@ Router.install = function (Vue, options) {
       } else {
         this._router = this.$parent._router;
         this.$router = this.$parent.$router;
-        this.$route = this._router.init$route(this);
+        this.$route = Router.init$route(this);
       }
       Vue.util.defineReactive(this._router, 'curView', this._router.curView);
     }

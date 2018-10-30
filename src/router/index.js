@@ -4,7 +4,7 @@ import {foreach} from './utils'
 class Router {
   constructor(obj) {
     // constructor
-    this.current = null
+    this.current = {}
     this.beforeHooks = []
     // 假设 钩子
     let {routes = []} = obj;
@@ -34,21 +34,24 @@ class Router {
     this.app = app
     this.setupListeners()
     let hash = location.href.indexOf('#') === -1 ? '/' : location.hash.substr(1)
-    let route = this.parse(hash)
-    const state = history.state
-    pushHash(hash, state)
-    if (Object.keys(state || {}).length !== 0) {
-      route.params = Object.assign(route.params, state)
-    }
-    this.update(route)
+    // let route = this.parse(hash)
+    const initRouter = this.init$router()
+    initRouter.push(hash)
 
-    app._router = this.init$router()
+    // const state = history.state
+    // pushHash(hash, state)
+    // if (Object.keys(state || {}).length !== 0) {
+    //   route.params = Object.assign(route.params, state)
+    // }
+    // this.update(route)
+    // todo state 问题
+    app._router = initRouter // 将 init$router 的方法传递到组件上去
 
   }
 
   update(route) {
-    console.log('update')
-    this.current = route.route.component
+    console.log('update', route)
+    this.current = route
     this.app._route = this.init$route(route)
   }
 
@@ -151,21 +154,16 @@ class Router {
 
     let routeObj = this.parse(location); //匹配路径
     this.confirmTransition(routeObj, () => {
-      // 检验参数是否完整
-      // 当 query 变化时 不是同一个path
-      if (checkIsRepeat(addQuery(routeObj.toPath, routeObj.query))) {
-        //与当前路由重复
-        return onAbort && onAbort()
-      }
-      // 改变路由和组件
 
-      console.log('run')
+      // 改变路由和组件
+      console.log('confirmTransition 回调 代表成功验证,和钩子通过')
       onComplete(routeObj)
       this.update(routeObj)
 
       // this.readyCbs run
 
     }, () => {
+      console.log('confirmTransition 回调 失败')
       onAbort && onAbort()
     })
 
@@ -173,10 +171,17 @@ class Router {
 
   confirmTransition(route, onComplete, onAbort) {
     console.log('confirm', this.beforeHooks)
+    // route 要去的路径
 
     // if (route.correct) { // 官方再次判断是否为相同
     //   return onAbort && onAbort('相同路由')
     // }
+
+    if (route.toPath === this.current.toPath) {
+      // 是否与当前路由重复
+      console.log('路由重复时触发')
+      return onAbort && onAbort()
+    }
 
     const queue = [].concat(
       // extractLeaveGuards(deactivated), // 离开的生命周期
@@ -187,14 +192,15 @@ class Router {
     );
 
     const abort = function (err) {
-      // 暂时如此
+      console.log('confirm 失败时调用')
       onAbort && onAbort(err);
     };
 
-    const current = this.current // 待修改 获取当前的对象
-    const iterator = (hook, next) => { // hook=>钩子函数  next=>回调函数
+    const current = this.current // 获取当前的对象
+    const iterator = (hook, next) => { // hook=>钩子函数  next=>回调函数(指全局,组件钩子函数中的 next 参数)
       hook(route, current, to => {
         if (to === false) {
+          console.log('run to==false')
           abort()
         } else if (
           typeof to === 'string' ||
@@ -205,9 +211,9 @@ class Router {
         ) {
           abort();
           if (typeof to === 'object' && to.replace) {
-            this.init$router.replace(to);
+            this.init$router().replace(to);
           } else {
-            this.init$router.push(to);
+            this.init$router().push(to);
           }
         } else {
           next(to);
@@ -217,7 +223,7 @@ class Router {
 
     runQueue(queue, iterator, () => {
       // 此为回调函数
-      console.log('runQueue的第三个参数 所有钩子运行完毕时回调',this.beforeHooks)
+      console.log('runQueue的第三个参数 所有钩子运行完毕时回调', this.beforeHooks)
       onComplete()
     })
   }
@@ -253,7 +259,7 @@ let View = {
     // data.routerView = true;
     let component = parent._routerRoot._route.current
     // console.dir(router)
-    // console.log('View render run')
+    console.log('View render run', component, parent._routerRoot)
     return h(component)
   }
 };
@@ -416,7 +422,6 @@ Router.install = function (Vue, options) {
         this._router = this.$options.router// new App 接受的router
         this._router.init(this)
         Vue.util.defineReactive(this, '_route', this._route);
-        console.log('run')
         // this._route = this._route
         //current 为当前对象
       } else {

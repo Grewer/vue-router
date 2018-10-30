@@ -18,7 +18,7 @@
     <h3>附带params</h3>
     <button @click="$router.push({path:'/bar/meta',params:{name:'this params name'}})">按钮router.push+path</button>
     <button @click="$router.push({name:'Bar',params:{name:'this params name'}})">按钮router.push+name</button>
-    <h3>拥有单独导航</h3>
+    <h3>拥有单独导航 带有组件进入钩子</h3>
     <button @click="$router.push('/foo')">按钮router.push+str</button>
     <button @click="$router.push({path:'/foo'})">按钮router.push+path</button>
     <button @click="$router.push({name:'Foo'})">按钮router.push+name</button>
