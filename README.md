@@ -2,15 +2,11 @@
 
 > a simple hash vue-router
 
-In development
+大体基本实现,不过退出钩子没完成,还一些 bug 什么的,有空余时间再进行补充
 
 
 ### 实现版本 vue-router 3.0.1
 
-### TODOList
-
-路由 path 暂只支持 'foo/:id'
-暂不支持 children // 后续加入
 
 ### main api:
 
