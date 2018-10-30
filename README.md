@@ -4,6 +4,9 @@
 
 In development
 
+
+### 实现版本 vue-router 3.0.1
+
 ### TODOList
 
 路由 path 暂只支持 'foo/:id'
@@ -17,13 +20,18 @@ In development
 
 ### 本实例钩子流程
 
-#### 进入
+#### 官方进入
 1. 调用全局的 beforeEach
 2. 在路由配置里调用 beforeEnter
 3. 在被激活的组件里调用 beforeRouteEnter
 4. 调用全局的 afterEach 钩子
 5. 调用 beforeRouteEnter 守卫中传给 next 的回调函数
 
+###  本例已实现
+1. 调用全局的 beforeEach
+2. 在路由配置里调用 beforeEnter
+3. 在被激活的组件里调用 beforeRouteEnter
+4. 调用全局的 afterEach 钩子
 
 
 ### 官方实例 vueRouter 的 API

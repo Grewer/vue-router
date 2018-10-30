@@ -6,6 +6,7 @@ class Router {
     // constructor
     this.current = {}
     this.beforeHooks = []
+    this.afterHooks = []
     // 假设 钩子
     let {routes = []} = obj;
     foreach(routes, item => {
@@ -51,8 +52,12 @@ class Router {
 
   update(route) {
     console.log('update', route)
+    const current = this.current
     this.current = route
     this.app._route = this.init$route(route)
+    this.afterHooks.forEach((hook) => {
+      hook && hook(route, current);
+    });
   }
 
   init$router() {
@@ -141,6 +146,10 @@ class Router {
     return registerHook(this.beforeHooks, fn) // 注册方法
   }
 
+  afterEach(fn) {
+    return registerHook(this.afterHooks, fn)
+  };
+
 
   transitionTo(location, onComplete, onAbort) { // vue router 中的函数
     // 步骤
@@ -154,12 +163,9 @@ class Router {
 
     let routeObj = this.parse(location); //匹配路径
     this.confirmTransition(routeObj, () => {
-
       // 改变路由和组件
-      console.log('confirmTransition 回调 代表成功验证,和钩子通过')
-      onComplete(routeObj)
+      onComplete(routeObj) // pushHash
       this.update(routeObj)
-
       // this.readyCbs run
 
     }, () => {
@@ -183,12 +189,13 @@ class Router {
       return onAbort && onAbort()
     }
 
+    console.warn('开始 route 钩子的组合', route)
+    const enterHook = getRouteEnterHook(route)
+
     const queue = [].concat(
       // extractLeaveGuards(deactivated), // 离开的生命周期
       this.beforeHooks,
-      // activated.map(function (m) {
-      //   return m.beforeEnter;
-      // }) // 组件内的进入生命周期
+      enterHook
     );
 
     const abort = function (err) {
@@ -223,8 +230,16 @@ class Router {
 
     runQueue(queue, iterator, () => {
       // 此为回调函数
-      console.log('runQueue的第三个参数 所有钩子运行完毕时回调', this.beforeHooks)
+      console.log('runQueue的第三个参数 所有钩子运行完毕时回调')
       onComplete()
+      // onComplete(route);
+      // if (this$1.router.app) {
+      //   this$1.router.app.$nextTick(function () {
+      //     postEnterCbs.forEach(function (cb) {
+      //       cb();
+      //     });
+      //   });
+      // }
     })
   }
 
@@ -268,7 +283,7 @@ let View = {
 function registerHook(list, fn) { // 注册hook
   list.push(fn);
   return function () { // 两个注册的钩子是相同一个(===) 则去除重复
-    var i = list.indexOf(fn);
+    let i = list.indexOf(fn);
     if (i > -1) {
       list.splice(i, 1);
     }
@@ -277,8 +292,8 @@ function registerHook(list, fn) { // 注册hook
 
 
 function runQueue(queue, fn, cb) { // 运行queue  cb 为所有队列运行完毕的 回调
-                                   // 参数 queue 需要运行的队列 fn
-  var step = function (index) {
+  // 参数 queue 需要运行的队列 fn
+  let step = function (index) {
     if (index >= queue.length) { // 此时钩子已经运行完毕, callback 运行
       cb();
     } else { // 此时运行队列中的钩子
@@ -320,6 +335,22 @@ function path2Regexp(path) {
     match: path,
     key
   }
+}
+
+function getRouteEnterHook(route) {
+  console.log(route)
+  let arr = []
+  const routeObj = route.route
+  if (routeObj) {
+    if (routeObj.beforeEnter) {
+      arr.push(routeObj.beforeEnter)
+    }
+    if (routeObj.component.beforeRouteEnter) {
+      arr.push(routeObj.component.beforeRouteEnter)
+    }
+  }
+
+  return arr
 }
 
 function matcher(routes, path) {

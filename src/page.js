@@ -39,7 +39,7 @@ export default new Router({
       name:'Foo',
       component:Foo,
       beforeEnter: (to, from, next) => {
-        // ...
+        next() // ok
       }
     },
     {
